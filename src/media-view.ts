@@ -236,6 +236,10 @@ export class MediaView extends FileView {
         return function (this: WorkspaceLeaf, view) {
           if (this.group) {
             if (view instanceof MediaView) return next.call(this, view);
+            if (view instanceof MarkdownView) {
+              if ((this as any).containerEl.childNodes.length == 3)
+                (this as any).containerEl.removeChild((this as any).containerEl.lastChild);
+            }
           } else return next.call(this, view);
         };
       },
