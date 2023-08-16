@@ -92,14 +92,15 @@ export default class MediaExtended extends Plugin {
       this.registerMarkdownPostProcessor(getEmbedProcessor(this, "internal"));
     }
     if (this.settings.timestampLink) {
-      this.registerMarkdownPostProcessor(getLinkProcessor(this, "internal"));
+      this.registerMarkdownPostProcessor(getLinkProcessor(this, "a.internal-link"));
     }
 
     // register link handlers
     if (this.settings.extendedImageEmbedSyntax) {
       this.registerMarkdownPostProcessor(getEmbedProcessor(this, "external"));
     }
-    this.registerMarkdownPostProcessor(getLinkProcessor(this, "external"));
+    this.registerMarkdownPostProcessor(getLinkProcessor(this, "a.external-link"));
+    this.registerMarkdownPostProcessor(getLinkProcessor(this, "a.auto-card-link-card"));
 
     if (!this.app.isMobile) {
       this.registerCodeMirror((cm) => {

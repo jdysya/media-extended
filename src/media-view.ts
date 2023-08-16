@@ -431,8 +431,16 @@ export class MediaView extends FileView {
       return `[[${linktext}#t=${display}]]`;
     } else
       return (
-        `[${display.replace(/\.\d+$/, "")}]` +
-        `(${mainpart(this.info.src)}#t=${offsetCurrentTime})`
+        // `[${display.replace(/\.\d+$/, "")}]` +
+        // `(${mainpart(this.info.src)}#t=${offsetCurrentTime})`
+`
+\`\`\`card
+link: ${mainpart(this.info.src)}#t=${offsetCurrentTime}
+title: "${this.getDisplayText()}"
+desc: "${display.replace(/\.\d+$/, "")}"
+logo: https://sync.jdysya.top/d/public/icon/video.svg
+\`\`\`
+`
       );
   }
 

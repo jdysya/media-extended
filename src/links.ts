@@ -3,7 +3,7 @@ import {
   MarkdownPostProcessor,
   MarkdownView,
   parseLinktext,
-  WorkspaceLeaf,
+  WorkspaceLeaf
 } from "obsidian";
 
 import { MEDIA_VIEW_TYPE, MediaView, openNewView } from "./media-view";
@@ -15,14 +15,14 @@ import {
   Host,
   isHost,
   mediaInfo,
-  resolveInfo,
+  resolveInfo
 } from "./modules/media-info";
 
 type evtHandler = (e: Event) => void;
 
 export const getOpenLink = (
   info: mediaInfo,
-  plugin: MediaExtended,
+  plugin: MediaExtended
 ): evtHandler => {
   const { workspace } = plugin.app;
   return (e) => {
@@ -63,7 +63,7 @@ export const getOpenLink = (
           player.play();
         } else {
           if (!isHost(info) && info.type === "media" && player.isHTML5) {
-            player.once("ready", function () {
+            player.once("ready", function() {
               const promise = this.play();
               let count = 0;
               if (promise) {
@@ -78,7 +78,7 @@ export const getOpenLink = (
               }
             });
           } else
-            player.once("ready", function () {
+            player.once("ready", function() {
               this.play();
             });
         }
@@ -91,17 +91,39 @@ export const getOpenLink = (
 
 export const getLinkProcessor = (
   plugin: MediaExtended,
-  type: "internal" | "external",
+  type: "a.internal-link" | "a.external-link" | "a.auto-card-link-card"
 ): MarkdownPostProcessor => {
-  const selector = type === "internal" ? "a.internal-link" : "a.external-link";
+  const selector = type;
   return (secEl, ctx) => {
-    secEl.querySelectorAll(selector).forEach(async (el) => {
-      const anchor = el as HTMLAnchorElement;
-      const info = await resolveInfo(anchor, type, plugin.app, ctx);
-      if (!info) return;
 
-      plugin.registerDomEvent(anchor, "click", getOpenLink(info, plugin));
+    // 动态监听`a.auto-card-link-card`元素，等存在时再执行
+    const observer = new MutationObserver((mutationsList, observer) => {
+      // 在 mutationsList 中检查是否出现了目标元素
+      const targetElements = secEl.querySelectorAll("a.auto-card-link-card");
+      if (targetElements.length) {
+        // 执行你想要的操作
+        targetElements.forEach(async (el) => {
+          const anchor = el as HTMLAnchorElement;
+          const info = await resolveInfo(anchor, type, plugin.app, ctx);
+          if (!info) return;
+          plugin.registerDomEvent(anchor, "click", getOpenLink(info, plugin));
+        });
+        observer.disconnect(); // 停止观察
+      }
     });
+
+    if (selector === "a.auto-card-link-card") {
+      // 启动观察
+      observer.observe(secEl, { childList: true, subtree: true });
+    } else {
+      secEl.querySelectorAll(selector).forEach(async (el) => {
+        const anchor = el as HTMLAnchorElement;
+        const info = await resolveInfo(anchor, type, plugin.app, ctx);
+        if (!info) return;
+        plugin.registerDomEvent(anchor, "click", getOpenLink(info, plugin));
+      });
+    }
+
   };
 };
 
@@ -126,7 +148,7 @@ export const getCMLinkHandler = (plugin: MediaExtended) => {
         }
         const file = metadataCache.getFirstLinkpathDest(
           path,
-          activeLeaf.file.path,
+          activeLeaf.file.path
         );
         if (!file) return;
         info = await getMediaInfo(file, hash);
